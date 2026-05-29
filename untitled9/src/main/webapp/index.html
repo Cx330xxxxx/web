@@ -1,0 +1,670 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>学生成绩管理系统</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            width: 100%;
+            max-width: 960px;
+            padding: 40px;
+            transition: all 0.3s ease;
+        }
+
+        h2 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 30px;
+            font-size: 28px;
+            border-bottom: 3px solid #667eea;
+            padding-bottom: 10px;
+            display: inline-block;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            font-weight: 600;
+            color: #555;
+            margin-bottom: 6px;
+        }
+
+        input, select, button {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e1e5eb;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: 0.3s;
+        }
+
+        input:focus, select:focus {
+            border-color: #667eea;
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.2);
+        }
+
+        button {
+            background-color: #667eea;
+            color: white;
+            border: none;
+            font-weight: bold;
+            cursor: pointer;
+            letter-spacing: 1px;
+            margin-top: 10px;
+        }
+
+        button:hover {
+            background-color: #5a6fd6;
+            transform: translateY(-1px);
+            box-shadow: 0 7px 14px rgba(50, 50, 93, 0.1), 0 3px 6px rgba(0, 0, 0, 0.08);
+        }
+
+        button.secondary {
+            background-color: #6c757d;
+            margin-top: 5px;
+        }
+
+        button.danger {
+            background-color: #dc3545;
+        }
+
+        button.success {
+            background-color: #28a745;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        .error-message {
+            color: #dc3545;
+            font-size: 14px;
+            margin-top: 5px;
+            text-align: center;
+        }
+
+        .success-message {
+            color: #28a745;
+            font-size: 14px;
+            margin-top: 5px;
+            text-align: center;
+        }
+
+        .user-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            background: #f8f9fa;
+            padding: 10px 20px;
+            border-radius: 8px;
+        }
+
+        .user-info span {
+            font-weight: 600;
+            color: #333;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        th, td {
+            padding: 14px 16px;
+            text-align: left;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        th {
+            background-color: #667eea;
+            color: white;
+            font-weight: 600;
+            position: sticky;
+            top: 0;
+        }
+
+        tr:hover {
+            background-color: #f1f3f9;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .action-buttons button {
+            width: auto;
+            padding: 6px 12px;
+            font-size: 14px;
+            margin: 0;
+        }
+
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            width: 90%;
+            max-width: 500px;
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        .modal-content h3 {
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+            margin-top: 20px;
+        }
+
+        .modal-buttons button {
+            width: auto;
+            padding: 8px 20px;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px;
+            }
+            th, td {
+                padding: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="container" id="app">
+    <!-- 登录界面 -->
+    <div id="login-section">
+        <div class="header">
+            <h2>🔐 成绩管理系统登录</h2>
+        </div>
+        <div class="form-group">
+            <label for="role">身份</label>
+            <select id="role">
+                <option value="student">学生</option>
+                <option value="teacher">老师</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="username">账号</label>
+            <input type="text" id="username" placeholder="请输入学号/工号">
+        </div>
+        <div class="form-group">
+            <label for="password">密码</label>
+            <input type="password" id="password" placeholder="请输入密码">
+        </div>
+        <p class="error-message hidden" id="login-error"></p>
+        <button id="login-btn">登 录</button>
+    </div>
+
+    <!-- 学生界面 -->
+    <div id="student-section" class="hidden">
+        <div class="header">
+            <h2>📚 我的成绩</h2>
+        </div>
+        <div class="user-info">
+            <span>👨‍🎓 学生：<span id="student-name"></span></span>
+            <span>学号：<span id="student-id"></span></span>
+            <button class="secondary" id="student-logout" style="width:auto;">退出登录</button>
+        </div>
+        <div id="student-grades-container">
+            <p>正在加载成绩信息...</p>
+        </div>
+    </div>
+
+    <!-- 老师界面 -->
+    <div id="teacher-section" class="hidden">
+        <div class="header">
+            <h2>📋 全部学生成绩管理</h2>
+        </div>
+        <div class="user-info">
+            <span>👩‍🏫 老师：<span id="teacher-name"></span></span>
+            <span>工号：<span id="teacher-id"></span></span>
+            <button class="secondary" id="teacher-logout" style="width:auto;">退出登录</button>
+        </div>
+        <button id="add-grade-btn" class="success" style="width:auto; margin-bottom:10px;">＋ 添加成绩记录</button>
+        <div id="teacher-grades-container">
+            <p>正在加载全部成绩...</p>
+        </div>
+    </div>
+
+    <!-- 编辑/添加成绩的模态框 -->
+    <div id="grade-modal" class="modal hidden">
+        <div class="modal-content">
+            <h3 id="modal-title">添加成绩</h3>
+            <div class="form-group">
+                <label for="modal-student-id">学号</label>
+                <input type="text" id="modal-student-id" placeholder="请输入学号">
+            </div>
+            <div class="form-group">
+                <label for="modal-course">课程名称</label>
+                <input type="text" id="modal-course" placeholder="例如：高等数学">
+            </div>
+            <div class="form-group">
+                <label for="modal-score">成绩</label>
+                <input type="number" id="modal-score" placeholder="0-100" min="0" max="100">
+            </div>
+            <p class="error-message hidden" id="modal-error"></p>
+            <div class="modal-buttons">
+                <button class="secondary" id="modal-cancel">取消</button>
+                <button id="modal-save">保存</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // ---------- 全局状态 ----------
+    const state = {
+        currentUser: null,          // 当前登录用户信息
+        role: null,                 // 'student' 或 'teacher'
+        editingGradeId: null       // 正在编辑的成绩ID（用于修改）
+    };
+
+    // API基础路径（根据后端实际地址修改）
+   const API_BASE = '/untitled9/api';   // 换成你实际的上下文路径;
+
+    // ---------- 工具函数 ----------
+    function $(selector) {
+        return document.querySelector(selector);
+    }
+
+    function showSection(sectionId) {
+        ['login-section', 'student-section', 'teacher-section'].forEach(id => {
+            $(`#${id}`).classList.toggle('hidden', id !== sectionId);
+        });
+    }
+
+    function showError(elementId, message) {
+        const el = $(`#${elementId}`);
+        el.textContent = message;
+        el.classList.remove('hidden');
+    }
+
+    function hideError(elementId) {
+        const el = $(`#${elementId}`);
+        el.classList.add('hidden');
+        el.textContent = '';
+    }
+
+    async function fetchAPI(url, options = {}) {
+        try {
+            const response = await fetch(`${API_BASE}${url}`, {
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                ...options,
+            });
+            const data = await response.json();
+            if (!response.ok) {
+                throw new Error(data.message || `请求失败 (状态码: ${response.status})`);
+            }
+            return data;
+        } catch (error) {
+            console.error('API请求出错:', error);
+            throw error;
+        }
+    }
+
+    // ---------- 登录逻辑 ----------
+    async function handleLogin() {
+        const role = $('#role').value;
+        const username = $('#username').value.trim();
+        const password = $('#password').value.trim();
+
+        hideError('login-error');
+
+        if (!username || !password) {
+            showError('login-error', '账号和密码不能为空');
+            return;
+        }
+
+        try {
+            // 调用后端登录接口，预期返回 { success, message, data: { user } }
+            const result = await fetchAPI('/login', {
+                method: 'POST',
+                body: JSON.stringify({ username, password, role }),
+            });
+
+            if (result.success) {
+                state.currentUser = result.data.user;
+                state.role = role;
+                // 清空登录表单
+                $('#username').value = '';
+                $('#password').value = '';
+                // 根据角色切换界面
+                if (role === 'student') {
+                    showStudentSection();
+                    loadStudentGrades();
+                } else {
+                    showTeacherSection();
+                    loadAllGrades();
+                }
+            } else {
+                showError('login-error', result.message || '登录失败');
+            }
+        } catch (error) {
+            showError('login-error', error.message || '网络错误，请稍后重试');
+        }
+    }
+
+    function logout() {
+        state.currentUser = null;
+        state.role = null;
+        showSection('login-section');
+        // 可选：调用后端注销接口清除session
+        fetchAPI('/logout', { method: 'POST' }).catch(() => {});
+    }
+
+    // ---------- 学生界面 ----------
+    function showStudentSection() {
+        if (!state.currentUser || state.role !== 'student') return;
+        $('#student-name').textContent = state.currentUser.name || state.currentUser.username;
+        $('#student-id').textContent = state.currentUser.studentId || state.currentUser.username;
+        showSection('student-section');
+    }
+
+    async function loadStudentGrades() {
+        const container = $('#student-grades-container');
+        container.innerHTML = '<p>加载中...</p>';
+        try {
+            const result = await fetchAPI(`/student/grades?studentId=${state.currentUser.studentId || state.currentUser.username}`);
+            if (result.success && result.data) {
+                renderStudentGrades(result.data);
+            } else {
+                container.innerHTML = '<p>暂无成绩数据</p>';
+            }
+        } catch (error) {
+            container.innerHTML = `<p class="error-message">加载失败：${error.message}</p>`;
+        }
+    }
+
+    function renderStudentGrades(grades) {
+        const container = $('#student-grades-container');
+        if (!grades || grades.length === 0) {
+            container.innerHTML = '<p>暂无成绩记录</p>';
+            return;
+        }
+        let html = `
+            <table>
+                <thead>
+                    <tr>
+                        <th>课程名称</th>
+                        <th>成绩</th>
+                        <th>学期</th>
+                    </tr>
+                </thead>
+                <tbody>
+        `;
+        grades.forEach(g => {
+            html += `
+                <tr>
+                    <td>${escapeHtml(g.courseName || g.course)}</td>
+                    <td>${g.score}</td>
+                    <td>${escapeHtml(g.semester || '')}</td>
+                </tr>
+            `;
+        });
+        html += '</tbody></table>';
+        container.innerHTML = html;
+    }
+
+    // 简单防XSS
+    function escapeHtml(text) {
+        const map = {
+            '&': '&amp;',
+            '<': '&lt;',
+            '>': '&gt;',
+            '"': '&quot;',
+            "'": '&#039;'
+        };
+        return String(text).replace(/[&<>"']/g, m => map[m]);
+    }
+
+    // ---------- 老师界面 ----------
+    function showTeacherSection() {
+        if (!state.currentUser || state.role !== 'teacher') return;
+        $('#teacher-name').textContent = state.currentUser.name || state.currentUser.username;
+        $('#teacher-id').textContent = state.currentUser.teacherId || state.currentUser.username;
+        showSection('teacher-section');
+    }
+
+    async function loadAllGrades() {
+        const container = $('#teacher-grades-container');
+        container.innerHTML = '<p>加载中...</p>';
+        try {
+            const result = await fetchAPI('/teacher/grades');
+            if (result.success && result.data) {
+                renderTeacherGrades(result.data);
+            } else {
+                container.innerHTML = '<p>暂无成绩数据</p>';
+            }
+        } catch (error) {
+            container.innerHTML = `<p class="error-message">加载失败：${error.message}</p>`;
+        }
+    }
+
+    function renderTeacherGrades(grades) {
+        const container = $('#teacher-grades-container');
+        if (!grades || grades.length === 0) {
+            container.innerHTML = '<p>目前没有任何成绩记录</p>';
+            return;
+        }
+        let html = `
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>学号</th>
+                        <th>姓名</th>
+                        <th>课程</th>
+                        <th>成绩</th>
+                        <th>操作</th>
+                    </tr>
+                </thead>
+                <tbody>
+        `;
+        grades.forEach(g => {
+            html += `
+                <tr>
+                    <td>${g.id}</td>
+                    <td>${escapeHtml(g.studentId)}</td>
+                    <td>${escapeHtml(g.studentName || '')}</td>
+                    <td>${escapeHtml(g.courseName || g.course)}</td>
+                    <td>${g.score}</td>
+                    <td class="action-buttons">
+                        <button class="edit-btn" data-id="${g.id}" data-studentid="${escapeHtml(g.studentId)}" data-course="${escapeHtml(g.courseName || g.course)}" data-score="${g.score}">修改</button>
+                        <button class="danger delete-btn" data-id="${g.id}">删除</button>
+                    </td>
+                </tr>
+            `;
+        });
+        html += '</tbody></table>';
+        container.innerHTML = html;
+
+        // 绑定修改和删除事件
+        document.querySelectorAll('.edit-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const id = btn.dataset.id;
+                const studentId = btn.dataset.studentid;
+                const course = btn.dataset.course;
+                const score = btn.dataset.score;
+                openEditModal(id, studentId, course, score);
+            });
+        });
+
+        document.querySelectorAll('.delete-btn').forEach(btn => {
+            btn.addEventListener('click', async (e) => {
+                const id = btn.dataset.id;
+                if (confirm('确定要删除这条成绩记录吗？')) {
+                    await deleteGrade(id);
+                }
+            });
+        });
+    }
+
+    // ---------- 增删改查操作 ----------
+    function openAddModal() {
+        state.editingGradeId = null;
+        $('#modal-title').textContent = '添加成绩';
+        $('#modal-student-id').value = '';
+        $('#modal-course').value = '';
+        $('#modal-score').value = '';
+        $('#modal-student-id').disabled = false;
+        hideError('modal-error');
+        $('#grade-modal').classList.remove('hidden');
+    }
+
+    function openEditModal(id, studentId, course, score) {
+        state.editingGradeId = id;
+        $('#modal-title').textContent = '修改成绩';
+        $('#modal-student-id').value = studentId;
+        $('#modal-course').value = course;
+        $('#modal-score').value = score;
+        $('#modal-student-id').disabled = true; // 修改时学号和课程通常不可改
+        hideError('modal-error');
+        $('#grade-modal').classList.remove('hidden');
+    }
+
+    function closeModal() {
+        $('#grade-modal').classList.add('hidden');
+        state.editingGradeId = null;
+    }
+
+    async function saveGrade() {
+        const studentId = $('#modal-student-id').value.trim();
+        const course = $('#modal-course').value.trim();
+        const score = $('#modal-score').value;
+
+        hideError('modal-error');
+
+        if (!studentId || !course || score === '') {
+            showError('modal-error', '所有字段均为必填');
+            return;
+        }
+        if (isNaN(score) || score < 0 || score > 100) {
+            showError('modal-error', '成绩必须在0-100之间');
+            return;
+        }
+
+        const payload = {
+            studentId,
+            courseName: course,
+            score: Number(score),
+        };
+
+        try {
+            if (state.editingGradeId) {
+                // 修改
+                await fetchAPI(`/teacher/grades/${state.editingGradeId}`, {
+                    method: 'PUT',
+                    body: JSON.stringify({ score: payload.score }), // 通常只修改成绩
+                });
+            } else {
+                // 添加
+                await fetchAPI('/teacher/grades', {
+                    method: 'POST',
+                    body: JSON.stringify(payload),
+                });
+            }
+            closeModal();
+            loadAllGrades(); // 刷新列表
+        } catch (error) {
+            showError('modal-error', error.message || '操作失败');
+        }
+    }
+
+    async function deleteGrade(id) {
+        try {
+            await fetchAPI(`/teacher/grades/${id}`, {
+                method: 'DELETE',
+            });
+            loadAllGrades();
+        } catch (error) {
+            alert('删除失败：' + (error.message || '未知错误'));
+        }
+    }
+
+    // ---------- 事件绑定 ----------
+    document.addEventListener('DOMContentLoaded', () => {
+        // 登录
+        $('#login-btn').addEventListener('click', handleLogin);
+        // 回车登录
+        $('#password').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') handleLogin();
+        });
+
+        // 退出登录
+        $('#student-logout').addEventListener('click', logout);
+        $('#teacher-logout').addEventListener('click', logout);
+
+        // 老师添加按钮
+        $('#add-grade-btn').addEventListener('click', openAddModal);
+
+        // 模态框操作
+        $('#modal-cancel').addEventListener('click', closeModal);
+        $('#modal-save').addEventListener('click', saveGrade);
+
+        // 点击模态框背景关闭（优化体验）
+        $('#grade-modal').addEventListener('click', (e) => {
+            if (e.target === $('#grade-modal')) {
+                closeModal();
+            }
+        });
+
+        // 默认显示登录页
+        showSection('login-section');
+    });
+</script>
+</body>
+</html>
